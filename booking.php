@@ -36,22 +36,25 @@
         header("location: ../login.php");
     }
     
-
     //import database
     include("../connection.php");
+
     $sqlmain= "select * from patient where pcontact=?";
     $stmt = $database->prepare($sqlmain);
     $stmt->bind_param("s",$usercontact);
     $stmt->execute();
     $result = $stmt->get_result();
-    $userfetch=$result->fetch_assoc();
+    $result = $con->query("SELECT * FROM users WHERE id = $userId");
+    $userfetch=$userrow->fetch_assoc();
     $userid= $userfetch["pid"];
     $username=$userfetch["pname"];
-
+    // Assuming $con is your database connection
 
     //echo $userid;
     //echo $username;
     
+
+
     date_default_timezone_set('Asia/Kolkata');
 
     $today = date('Y-m-d');
@@ -111,34 +114,7 @@
                 
             </table>
         </div>
-        <?php
-
-                $sqlmain= "select * from schedule inner join doctor on schedule.docid=doctor.docid where schedule.scheduledate>='$today'  order by schedule.scheduledate asc";
-                $sqlpt1="";
-                $insertkey="";
-                $q='';
-                $searchtype="All";
-                        if($_POST){
-                        //print_r($_POST);
-                        
-                        if(!empty($_POST["search"])){
-                            /*TODO: make and understand */
-                            $keyword=$_POST["search"];
-                            $sqlmain= "select * from schedule inner join doctor on schedule.docid=doctor.docid where schedule.scheduledate>='$today' and (doctor.docname='$keyword' or doctor.docname like '$keyword%' or doctor.docname like '%$keyword' or doctor.docname like '%$keyword%' or schedule.title='$keyword' or schedule.title like '$keyword%' or schedule.title like '%$keyword' or schedule.title like '%$keyword%' or schedule.scheduledate like '$keyword%' or schedule.scheduledate like '%$keyword' or schedule.scheduledate like '%$keyword%' or schedule.scheduledate='$keyword' )  order by schedule.scheduledate asc";
-                            //echo $sqlmain;
-                            $insertkey=$keyword;
-                            $searchtype="Search Result : ";
-                            $q='"';
-                        }
-
-                    }
-
-
-                $result= $database->query($sqlmain)
-
-
-                ?>
-                  
+        
         <div class="dash-body">
             <table border="0" width="100%" style=" border-spacing: 0;margin:0;padding:0;margin-top:25px; ">
                 <tr >
@@ -146,9 +122,9 @@
                     <a href="schedule.php" ><button  class="login-btn btn-primary-soft btn btn-icon-back"  style="padding-top:11px;padding-bottom:11px;margin-left:20px;width:125px"><font class="tn-in-text">Back</font></button></a>
                     </td>
                     <td >
-                            <form action="" method="post" class="header-search">
+                            <form action="schedule.php" method="post" class="header-search">
 
-                                        <input type="search" name="search" class="input-text header-searchbar" placeholder="Search Doctor name or Contact or Date (YYYY-MM-DD)" list="doctors" value="<?php  echo $insertkey ?>">&nbsp;&nbsp;
+                                        <input type="search" name="search" class="input-text header-searchbar" placeholder="Search Doctor name or Email or Date (YYYY-MM-DD)" list="doctors" >&nbsp;&nbsp;
                                         
                                         <?php
                                             echo '<datalist id="doctors">';
@@ -207,8 +183,8 @@
                 
                 <tr>
                     <td colspan="4" style="padding-top:10px;width: 100%;" >
-                        <p class="heading-main12" style="margin-left: 45px;font-size:18px;color:rgb(49, 49, 49)"><?php echo $searchtype." Sessions"."(".$result->num_rows.")"; ?> </p>
-                        <p class="heading-main12" style="margin-left: 45px;font-size:22px;color:rgb(49, 49, 49)"><?php echo $q.$insertkey.$q ; ?> </p>
+                        <!-- <p class="heading-main12" style="margin-left: 45px;font-size:18px;color:rgb(49, 49, 49);font-weight:400;">Scheduled Sessions / Booking / <b>Review Booking</b></p> -->
+                        
                     </td>
                     
                 </tr>
@@ -224,96 +200,113 @@
                         <tbody>
                         
                             <?php
-
+                            
+                            if(($_GET)){
                                 
                                 
-
-                                if($result->num_rows==0){
-                                    echo '<tr>
-                                    <td colspan="4">
-                                    <br><br><br><br>
-                                    <center>
-                                    <img src="../img/notfound.svg" width="25%">
+                                if(isset($_GET["id"])){
                                     
-                                    <br>
-                                    <p class="heading-main12" style="margin-left: 45px;font-size:20px;color:rgb(49, 49, 49)">We  couldnt find anything related to your keywords !</p>
-                                    <a class="non-style-link" href="schedule.php"><button  class="login-btn btn-primary-soft btn"  style="display: flex;justify-content: center;align-items: center;margin-left:20px;">&nbsp; Show all Sessions &nbsp;</font></button>
-                                    </a>
-                                    </center>
-                                    <br><br><br><br>
-                                    </td>
-                                    </tr>';
+
+                                    $id=$_GET["id"];
+
+                                    $sqlmain= "select * from schedule inner join doctor on schedule.docid=doctor.docid where schedule.scheduleid=? order by schedule.scheduledate desc";
+                                    $stmt = $database->prepare($sqlmain);
+                                    $stmt->bind_param("i", $id);
+                                    $stmt->execute();
+                                    $result = $stmt->get_result();
+                                    //echo $sqlmain;
+                                    $row=$result->fetch_assoc();
+                                    $scheduleid=$row["scheduleid"];
+                                    $title=$row["title"];
+                                    $docname=$row["docname"];
+                                    $doccontact=$row["doccontact"];
+                                    $scheduledate=$row["scheduledate"];
+                                    $scheduletime=$row["scheduletime"];
+                                    $sql2="select * from appointment where scheduleid=$id";
+                                    //echo $sql2;
+                                     $result12= $database->query($sql2);
+                                     $apponum=($result12->num_rows)+1;
                                     
-                                }
-                                else{
-                                    //echo $result->num_rows;
-                                for ( $x=0; $x<($result->num_rows);$x++){
-                                    echo "<tr>";
-                                    for($q=0;$q<3;$q++){
-                                        $row=$result->fetch_assoc();
-                                        if (!isset($row)){
-                                            break;
-                                        };
-                                        $scheduleid=$row["scheduleid"];
-                                        $title=$row["title"];
-                                        $docname=$row["docname"];
-                                        $scheduledate=$row["scheduledate"];
-                                        $scheduletime=$row["scheduletime"];
+                                    echo '
+                                        <form action="booking-complete.php" method="post">
+                                            <input type="hidden" name="scheduleid" value="'.$scheduleid.'" >
+                                            <input type="hidden" name="apponum" value="'.$apponum.'" >
+                                            <input type="hidden" name="date" value="'.$today.'" >
 
-                                        if($scheduleid==""){
-                                            break;
-                                        }
+                                        
+                                    
+                                    ';
+                                     
 
-                                        echo '
-                                        <td style="width: 25%;">
-                                                <div  class="dashboard-items search-items"  >
-                                                
-                                                    <div style="width:100%">
-                                                            <div class="h1-search">
-                                                                '.substr($title,0,21).'
-                                                            </div><br>
-                                                            <div class="h3-search">
-                                                                '.substr($docname,0,30).'
-                                                            </div>
-                                                            <div class="h4-search">
-                                                                '.$scheduledate.'<br>Starts: <b>@'.substr($scheduletime,0,5).'</b> (24h)
-                                                            </div>
-                                                            <br>
-                                                            <a href="booking.php?id='.$scheduleid.'" ><button  class="login-btn btn-primary-soft btn "  style="padding-top:11px;padding-bottom:11px;width:100%"><font class="tn-in-text">Book Now</font></button></a>
-                                                    </div>
-                                                            
+                                    echo '
+                                    <td style="width: 50%;" rowspan="2">
+                                            <div  class="dashboard-items search-items"  >
+                                            
+                                                <div style="width:100%">
+                                                        <div class="h1-search" style="font-size:25px;">
+                                                            Session Details
+                                                        </div><br><br>
+                                                        <div class="h3-search" style="font-size:18px;line-height:30px">
+                                                            Doctor name:  &nbsp;&nbsp;<b>'.$docname.'</b><br>
+                                                            Doctor Contact:  &nbsp;&nbsp;<b>'.$doccontact.'</b> 
+                                                        </div>
+                                                        <div class="h3-search" style="font-size:18px;">
+                                                          
+                                                        </div><br>
+                                                        <div class="h3-search" style="font-size:18px;">
+                                                            Session Title: '.$title.'<br>
+                                                            Session Scheduled Date: '.$scheduledate.'<br>
+                                                            Session Starts : '.$scheduletime.'<br>
+                                                            Channeling fee : <b>LKR.2 000.00</b>
+
+                                                        </div>
+                                                        <br>
+                                                        
                                                 </div>
-                                            </td>';
-
-                                    }
-                                    echo "</tr>";
-                                    
-                                    
-                                    // echo '<tr>
-                                    //     <td> &nbsp;'.
-                                    //     substr($title,0,30)
-                                    //     .'</td>
+                                                        
+                                            </div>
+                                        </td>
                                         
-                                    //     <td style="text-align:center;">
-                                    //         '.substr($scheduledate,0,10).' '.substr($scheduletime,0,5).'
-                                    //     </td>
-                                    //     <td style="text-align:center;">
-                                    //         '.$nop.'
-                                    //     </td>
-
-                                    //     <td>
-                                    //     <div style="display:flex;justify-content: center;">
                                         
-                                    //     <a href="?action=view&id='.$scheduleid.'" class="non-style-link"><button  class="btn-primary-soft btn button-icon btn-view"  style="padding-left: 40px;padding-top: 12px;padding-bottom: 12px;margin-top: 10px;"><font class="tn-in-text">View</font></button></a>
-                                    //    &nbsp;&nbsp;&nbsp;
-                                    //    <a href="?action=drop&id='.$scheduleid.'&name='.$title.'" class="non-style-link"><button  class="btn-primary-soft btn button-icon btn-delete"  style="padding-left: 40px;padding-top: 12px;padding-bottom: 12px;margin-top: 10px;"><font class="tn-in-text">Cancel Session</font></button></a>
-                                    //     </div>
-                                    //     </td>
-                                    // </tr>';
-                                    
+                                        
+                                        <td style="width: 25%;">
+                                            <div  class="dashboard-items search-items"  >
+                                            
+                                                <div style="width:100%;padding-top: 15px;padding-bottom: 15px;">
+                                                        <div class="h1-search" style="font-size:20px;line-height: 35px;margin-left:8px;text-align:center;">
+                                                            Your Appointment Number
+                                                        </div>
+                                                        <center>
+                                                        <div class=" dashboard-icons" style="margin-left: 0px;width:90%;font-size:70px;font-weight:800;text-align:center;color:var(--btnnictext);background-color: var(--btnice)">'.$apponum.'</div>
+                                                    </center>
+                                                       
+                                                        </div><br>
+                                                        
+                                                        <br>
+                                                        <br>
+                                                </div>
+                                                        
+                                            </div>
+                                        </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <input type="Submit" class="login-btn btn-primary btn btn-book" style="margin-left:10px;padding-left: 25px;padding-right: 25px;padding-top: 10px;padding-bottom: 10px;width:95%;text-align: center;" value="Book now" name="booknow"></button>
+                                            </form>
+                                            </td>
+                                        </tr>
+                                        '; 
+                                        
+
+
+
+
                                 }
+
+
+
                             }
-                                 
+                            
                             ?>
  
                             </tbody>
@@ -329,7 +322,9 @@
             </table>
         </div>
     </div>
-
+    
+    
+   
     </div>
 
 </body>

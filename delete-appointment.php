@@ -19,6 +19,9 @@
         //$result001= $database->query("select * from schedule where scheduleid=$id;");
         //$contact=($result001->fetch_assoc())["doccontact"];
         $sql= $database->query("delete from appointment where appoid='$id';");
+        $stmt = $database->prepare($sqlmain);
+        $stmt->bind_param("i",$id);
+        $stmt->execute();
         //$sql= $database->query("delete from doctor where doccontact='$contact';");
         //print_r($contact);
         header("location: appointment.php");

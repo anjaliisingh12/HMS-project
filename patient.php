@@ -39,7 +39,11 @@
 
     //import database
     include("../connection.php");
-    $userrow = $database->query("select * from doctor where doccontact='$usercontact'");
+    $sqlmain= "select * from doctor where doccontact=?";
+    $stmt = $database->prepare($sqlmain);
+    $stmt->bind_param("s",$usercontact);
+    $stmt->execute();
+    $userrow = $stmt->get_result();
     $userfetch=$userrow->fetch_assoc();
     $userid= $userfetch["docid"];
     $username=$userfetch["docname"];
@@ -108,7 +112,7 @@
 
                         if(isset($_POST["search"])){
                             $keyword=$_POST["search12"];
-                            
+                            /*TODO: make and understand */
                             $sqlmain= "select * from patient where pcontact='$keyword' or pname='$keyword' or pname like '$keyword%' or pname like '%$keyword' or pname like '%$keyword%' ";
                             $selecttype="my";
                         }
@@ -144,7 +148,7 @@
                         
                         <form action="" method="post" class="header-search">
 
-                            <input type="search" name="search12" class="input-text header-searchbar" placeholder="Search Patient name or Contact" list="patient">&nbsp;&nbsp;
+                            <input type="search" name="search12" class="input-text header-searchbar" placeholder="Search Patient name or Email" list="patient">&nbsp;&nbsp;
                             
                             <?php
                                 echo '<datalist id="patient">';
@@ -253,7 +257,9 @@
                                 
                                 </th>
                                 <th class="table-headin">
+
                                     Contact
+
                                 </th>
                                 <th class="table-headin">
                                     
@@ -346,10 +352,13 @@
     <?php 
     if($_GET){
         
-        $id=$_GET["id"];
-        $action=$_GET["action"];
-            $sqlmain= "select * from patient where pid='$id'";
-            $result= $database->query($sqlmain);
+            $id=$_GET["id"];
+            $action=$_GET["action"];
+            $sqlmain= "select * from patient where pid=?";
+            $stmt = $database->prepare($sqlmain);
+            $stmt->bind_param("i",$id);
+            $stmt->execute();
+            $result = $stmt->get_result();
             $row=$result->fetch_assoc();
             $name=$row["pname"];
             $contact=$row["pcontact"];
