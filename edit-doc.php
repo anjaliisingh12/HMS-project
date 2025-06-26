@@ -12,10 +12,10 @@
         //print_r($_POST);
         $result= $database->query("select * from webuser");
         $name=$_POST['name'];
+        $oldcontact=$_POST["oldcontact"];
         $nic=$_POST['nic'];
-        $oldemail=$_POST["oldcontact"];
         $spec=$_POST['spec'];
-        $email=$_POST['contact'];
+        $contact=$_POST['contact'];
         $tele=$_POST['Tele'];
         $password=$_POST['password'];
         $cpassword=$_POST['cpassword'];
@@ -43,10 +43,11 @@
                 //$sql1="insert into doctor(doccontact,docname,docpassword,docnic,doctel,specialties) values('$contact','$name','$password','$nic','$tele',$spec);";
                 $sql1="update doctor set doccontact='$contact',docname='$name',docpassword='$password',docnic='$nic',doctel='$tele',specialties=$spec where docid=$id ;";
                 $database->query($sql1);
-                
+
                 $sql1="update webuser set contact='$contact' where contact='$oldcontact' ;";
                 $database->query($sql1);
-                //echo $sql1;
+
+                echo $sql1;
                 //echo $sql2;
                 $error= '4';
                 
@@ -65,7 +66,7 @@
     }
     
 
-    header("location: doctors.php?action=edit&error=".$error."&id=".$id);
+    header("location: settings.php?action=edit&error=".$error."&id=".$id);
     ?>
     
    

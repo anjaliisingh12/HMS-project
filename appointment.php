@@ -26,8 +26,10 @@
     session_start();
 
     if(isset($_SESSION["user"])){
-        if(($_SESSION["user"])=="" or $_SESSION['usertype']!='a'){
+        if(($_SESSION["user"])=="" or $_SESSION['usertype']!='d'){
             header("location: ../login.php");
+        }else{
+            $usercontact=$_SESSION["user"];
         }
 
     }else{
@@ -36,14 +38,17 @@
     
     
 
-    //import database
-    include("../connection.php");
-
-    
+       //import database
+       include("../connection.php");
+       $userrow = $database->query("select * from doctor where doccontact='$usercontact'");
+       $userfetch=$userrow->fetch_assoc();
+       $userid= $userfetch["docid"];
+       $username=$userfetch["docname"];
+    //echo $userid;
     ?>
     <div class="container">
         <div class="menu">
-            <table class="menu-container" border="0">
+        <table class="menu-container" border="0">
                 <tr>
                     <td style="padding:10px" colspan="2">
                         <table border="0" class="profile-container">
@@ -52,8 +57,8 @@
                                     <img src="../img/user.png" alt="" width="100%" style="border-radius:50%">
                                 </td>
                                 <td style="padding:0px;margin:0px;">
-                                    <p class="profile-title">Administrator</p>
-                                    <p class="profile-subtitle">admin@hms.com</p>
+                                    <p class="profile-title"><?php echo substr($username,0,13)  ?>..</p>
+                                    <p class="profile-subtitle"><?php echo substr($usercontact,0,22)  ?></p>
                                 </td>
                             </tr>
                             <tr>
@@ -63,34 +68,34 @@
                             </tr>
                     </table>
                     </td>
+                </tr>
+                <tr class="menu-row" >
+                    <td class="menu-btn menu-icon-dashbord " >
+                        <a href="index.php" class="non-style-link-menu "><div><p class="menu-text">Dashboard</p></a></div></a>
+                    </td>
+                </tr>
+                <tr class="menu-row">
+                    <td class="menu-btn menu-icon-appoinment  menu-active menu-icon-appoinment-active">
+                        <a href="appointment.php" class="non-style-link-menu non-style-link-menu-active"><div><p class="menu-text">My Appointments</p></a></div>
+                    </td>
+                </tr>
                 
-                </tr>
                 <tr class="menu-row" >
-                    <td class="menu-btn menu-icon-dashbord" >
-                        <a href="index.php" class="non-style-link-menu"><div><p class="menu-text">Dashboard</p></a></div></a>
-                    </td>
-                </tr>
-                <tr class="menu-row">
-                    <td class="menu-btn menu-icon-doctor ">
-                        <a href="doctors.php" class="non-style-link-menu "><div><p class="menu-text">Doctors</p></a></div>
-                    </td>
-                </tr>
-                <tr class="menu-row" >
-                    <td class="menu-btn menu-icon-schedule ">
-                        <a href="schedule.php" class="non-style-link-menu"><div><p class="menu-text">Schedule</p></div></a>
-                    </td>
-                </tr>
-                <tr class="menu-row">
-                    <td class="menu-btn menu-icon-appoinment menu-active menu-icon-appoinment-active">
-                        <a href="appointment.php" class="non-style-link-menu non-style-link-menu-active"><div><p class="menu-text">Appointment</p></a></div>
+                    <td class="menu-btn menu-icon-session">
+                        <a href="schedule.php" class="non-style-link-menu"><div><p class="menu-text">My Sessions</p></div></a>
                     </td>
                 </tr>
                 <tr class="menu-row" >
                     <td class="menu-btn menu-icon-patient">
-                        <a href="patient.php" class="non-style-link-menu"><div><p class="menu-text">Patients</p></a></div>
+                        <a href="patient.php" class="non-style-link-menu"><div><p class="menu-text">My Patients</p></a></div>
                     </td>
                 </tr>
-
+                <tr class="menu-row" >
+                    <td class="menu-btn menu-icon-settings">
+                        <a href="settings.php" class="non-style-link-menu"><div><p class="menu-text">Settings</p></a></div>
+                    </td>
+                </tr>
+                
             </table>
         </div>
         <div class="dash-body">
@@ -115,7 +120,7 @@
                         $today = date('Y-m-d');
                         echo $today;
 
-                        $list110 = $database->query("select  * from  appointment;");
+                        $list110 = $database->query("select * from schedule inner join appointment on schedule.scheduleid=appointment.scheduleid inner join patient on patient.pid=appointment.pid inner join doctor on schedule.docid=doctor.docid  where  doctor.docid=$userid ");
 
                         ?>
                         </p>
@@ -139,7 +144,7 @@
                 <tr>
                     <td colspan="4" style="padding-top:10px;width: 100%;" >
                     
-                        <p class="heading-main12" style="margin-left: 45px;font-size:18px;color:rgb(49, 49, 49)">All Appointments (<?php echo $list110->num_rows; ?>)</p>
+                        <p class="heading-main12" style="margin-left: 45px;font-size:18px;color:rgb(49, 49, 49)">My Appointments (<?php echo $list110->num_rows; ?>)</p>
                     </td>
                     
                 </tr>
@@ -160,29 +165,7 @@
                             <input type="date" name="sheduledate" id="date" class="input-text filter-container-items" style="margin: 0;width: 95%;">
 
                         </td>
-                        <td width="5%" style="text-align: center;">
-                        Doctor:
-                        </td>
-                        <td width="30%">
-                        <select name="docid" id="" class="box filter-container-items" style="width:90% ;height: 37px;margin: 0;" >
-                            <option value="" disabled selected hidden>Choose Doctor Name from the list</option><br/>
-                                
-                            <?php 
-                             
-                                $list11 = $database->query("select  * from  doctor order by docname asc;");
-
-                                for ($y=0;$y<$list11->num_rows;$y++){
-                                    $row00=$list11->fetch_assoc();
-                                    $sn=$row00["docname"];
-                                    $id00=$row00["docid"];
-                                    echo "<option value=".$id00.">$sn</option><br/>";
-                                };
-
-
-                                ?>
-
-                        </select>
-                    </td>
+                        
                     <td width="12%">
                         <input type="submit"  name="filter" value=" Filter" class=" btn-primary-soft btn button-icon btn-filter"  style="padding: 15px; margin :0;width:100%">
                         </form>
@@ -197,43 +180,26 @@
                 </tr>
                 
                 <?php
+
+
+                    $sqlmain= "select appointment.appoid,schedule.scheduleid,schedule.title,doctor.docname,patient.pname,schedule.scheduledate,schedule.scheduletime,appointment.apponum,appointment.appodate from schedule inner join appointment on schedule.scheduleid=appointment.scheduleid inner join patient on patient.pid=appointment.pid inner join doctor on schedule.docid=doctor.docid  where  doctor.docid=$userid ";
+
                     if($_POST){
                         //print_r($_POST);
-                        $sqlpt1="";
+                        
+
+
+                        
                         if(!empty($_POST["sheduledate"])){
                             $sheduledate=$_POST["sheduledate"];
-                            $sqlpt1=" schedule.scheduledate='$sheduledate' ";
-                        }
-
-
-                        $sqlpt2="";
-                        if(!empty($_POST["docid"])){
-                            $docid=$_POST["docid"];
-                            $sqlpt2=" doctor.docid=$docid ";
-                        }
-                        //echo $sqlpt2;
-                        //echo $sqlpt1;
-                        $sqlmain= "select appointment.appoid,schedule.scheduleid,schedule.title,doctor.docname,patient.pname,schedule.scheduledate,schedule.scheduletime,appointment.apponum,appointment.appodate from schedule inner join appointment on schedule.scheduleid=appointment.scheduleid inner join patient on patient.pid=appointment.pid inner join doctor on schedule.docid=doctor.docid";
-                        $sqllist=array($sqlpt1,$sqlpt2);
-                        $sqlkeywords=array(" where "," and ");
-                        $key2=0;
-                        foreach($sqllist as $key){
-
-                            if(!empty($key)){
-                                $sqlmain.=$sqlkeywords[$key2].$key;
-                                $key2++;
-                            };
+                            $sqlmain.=" and schedule.scheduledate='$sheduledate' ";
                         };
+
+                        
+
                         //echo $sqlmain;
 
-                        
-                        
-                        //
-                    }else{
-                        $sqlmain= "select appointment.appoid,schedule.scheduleid,schedule.title,doctor.docname,patient.pname,schedule.scheduledate,schedule.scheduletime,appointment.apponum,appointment.appodate from schedule inner join appointment on schedule.scheduleid=appointment.scheduleid inner join patient on patient.pid=appointment.pid inner join doctor on schedule.docid=doctor.docid  order by schedule.scheduledate desc";
-
                     }
-
 
 
                 ?>
@@ -254,10 +220,6 @@
                                     
                                 </th>
                                
-                                
-                                <th class="table-headin">
-                                    Doctor
-                                </th>
                                 <th class="table-headin">
                                     
                                 
@@ -265,7 +227,7 @@
                                     
                                     </th>
                                 
-                                <th class="table-headin" style="font-size:10px">
+                                <th class="table-headin" >
                                     
                                     Session Date & Time
                                     
@@ -329,13 +291,10 @@
                                         
                                         </td>
                                         <td>
-                                        '.substr($docname,0,25).'
-                                        </td>
-                                        <td>
                                         '.substr($title,0,15).'
                                         </td>
-                                        <td style="text-align:center;font-size:12px;">
-                                            '.substr($scheduledate,0,10).' <br>'.substr($scheduletime,0,5).'
+                                        <td style="text-align:center;;">
+                                            '.substr($scheduledate,0,10).' @'.substr($scheduletime,0,5).'
                                         </td>
                                         
                                         <td style="text-align:center;">
@@ -539,7 +498,7 @@
             $result= $database->query($sqlmain);
             $row=$result->fetch_assoc();
             $name=$row["docname"];
-            $email=$row["doccontact"];
+            $contact=$row["doccontact"];
             $spe=$row["specialties"];
             
             $spcil_res= $database->query("select sname from specialties where id='$spe'");
@@ -580,7 +539,7 @@
                             </tr>
                             <tr>
                                 <td class="label-td" colspan="2">
-                                    <label for="Email" class="form-label">Email: </label>
+                                    <label for="Contact" class="form-label">Contact: </label>
                                 </td>
                             </tr>
                             <tr>

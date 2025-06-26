@@ -27,7 +27,9 @@
 
     if(isset($_SESSION["user"])){
         if(($_SESSION["user"])=="" or $_SESSION['usertype']!='a'){
-            header("location: ../login.php");
+            //header("location: ../login.php");
+        }else{
+            $useremail=$_SESSION["user"];
         }
 
     }else{
@@ -103,7 +105,7 @@
                         
                         <form action="" method="post" class="header-search">
 
-                            <input type="search" name="search" class="input-text header-searchbar" placeholder="Search Doctor name or Contact" list="doctors">&nbsp;&nbsp;
+                            <input type="search" name="search" class="input-text header-searchbar" placeholder="Search Doctor name or Email" list="doctors">&nbsp;&nbsp;
                             
                             <?php
                                 echo '<datalist id="doctors">';
@@ -188,7 +190,9 @@
                                 
                                 </th>
                                 <th class="table-headin">
+
                                     Contact
+
                                 </th>
                                 <th class="table-headin">
                                     
@@ -321,7 +325,7 @@
                         <h2></h2>
                         <a class="close" href="doctors.php">&times;</a>
                         <div class="content">
-                            HMS Web App<br>
+                            eDoc Web App<br>
                             
                         </div>
                         <div style="display: flex;justify-content: center;">
@@ -487,7 +491,7 @@
                                     <select name="spec" id="" class="box" >';
                                         
         
-                                        $list11 = $database->query("select  * from  specialties order by sname asc;");
+                                        $list11 = $database->query("select  * from  specialties;");
         
                                         for ($y=0;$y<$list11->num_rows;$y++){
                                             $row00=$list11->fetch_assoc();
@@ -582,7 +586,7 @@
 
             $error_1=$_GET["error"];
                 $errorlist= array(
-                    '1'=>'<label for="promter" class="form-label" style="color:rgb(255, 62, 62);text-align:center;">Already have an account for this Contact number.</label>',
+                    '1'=>'<label for="promter" class="form-label" style="color:rgb(255, 62, 62);text-align:center;">Already have an account for this Email address.</label>',
                     '2'=>'<label for="promter" class="form-label" style="color:rgb(255, 62, 62);text-align:center;">Password Conformation Error! Reconform Password</label>',
                     '3'=>'<label for="promter" class="form-label" style="color:rgb(255, 62, 62);text-align:center;"></label>',
                     '4'=>"",
@@ -614,9 +618,8 @@
                                     <tr>
                                         <td class="label-td" colspan="2">
                                             <form action="edit-doc.php" method="POST" class="add-new-form">
-                                            <label for="Contact" class="form-label">Contact: </label>
+                                            <label for="Email" class="form-label">Email: </label>
                                             <input type="hidden" value="'.$id.'" name="id00">
-                                            <input type="hidden" name="oldcontact" value="'.$contact.'" >
                                         </td>
                                     </tr>
                                     <tr>
